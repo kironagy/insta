@@ -3,11 +3,11 @@ var router = express.Router();
 const controller = require("../controller/userController")
 const Auth = require('../middleware/authmiddleware');
 /* ** All Routers come Come before it / users ** */
-
+const path = require("path")
 const multer = require('multer');
 const storage = multer.diskStorage({
     destination: function(req,file,cb){
-        cb(null , '../client/public/users/')
+        cb(null , './upload/users/')
     },
     filename:function(req,file,cb){
         const fileName = Date.now() + "-" + Math.round(Math.random() * 100) +"-"+ file.originalname.replace(" ",'').replace("  ",'') ;
@@ -38,6 +38,15 @@ router.post("/me" ,Auth.verify, controller.me);
 router.get("/profile/:id" , controller.profile);
 // Return user avatar
 router.post("/avatar" , controller.getAvatar);
+router.get("/upload/avatar/:id" , (req,res,next)=>{
+    try{
+        const ph = path.join(__dirname , '../upload/users/')
+        res.sendFile(ph + req.params.id)
+    }catch(err){
+        res.status(200).send("")
+    }
+});
+
 
 
 module.exports = router;

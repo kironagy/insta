@@ -1,4 +1,4 @@
-import {BrowserRouter as Router , Switch , Route} from 'react-router-dom'
+import {BrowserRouter as Router , Switch , Route, Redirect} from 'react-router-dom'
 import axios from 'axios';
 // All Components
 import Navbar from './pages/Navbar/Navbar';
@@ -9,6 +9,7 @@ import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import { useEffect, useState } from 'react';
 import ShowPost from './pages/Posts/ShowPost.jsx';
+import NotFound from './pages/NotFound/NotFound'
 
 function App() {
   const [user , setUser] = useState({})
@@ -37,11 +38,12 @@ function App() {
         <Switch>
 
           <Route exact path='/' component={Home}></Route>
-          <Route path='/create-post' component={CreatePost}></Route>
           <Route path='/profile/:id' component={Profile}></Route>
-          <Route path='/login' component={Login}></Route>
-          <Route path='/register' component={Register}></Route>
           <Route path='/posts/:id' component={ShowPost}></Route>
+          {localStorage.getItem("token") || localStorage.getItem("id") ? <Route path='/create-post' component={CreatePost}></Route> : ''}
+          {localStorage.getItem("token") || localStorage.getItem("id") ?  "" :<Route path='/login' component={Login}></Route>}
+          {localStorage.getItem("token") || localStorage.getItem("id") ? '' : <Route path='/register' component={Register}></Route>}
+          <Route path='*' component={NotFound}></Route>
         </Switch>
       </Router>
     </div>

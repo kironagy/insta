@@ -1,5 +1,7 @@
 const Post = require("../module/posts");
 const User = require("../module/users");
+const fs = require("fs")
+const path = require("path")
 // Create a new Post 
 exports.Create_Post = (req,res,next)=>{
     const Data = {
@@ -9,21 +11,20 @@ exports.Create_Post = (req,res,next)=>{
     }
     Post.create(Data).then(post =>{
         User.findById(req.user.id).then(user=>{
-            if(req.body.title !==''){
+            if(req.body.title !== ''){
                 if(req.file){
                     user.posts.push(post._id);
                     user.save();
+                }else{
+                    res.status(404).send("Upload img please")
                 }
-               }else{
-                res.send("ERROR CREATE POST")
-               }
+            }
         })
         res.send("Done")
      })
      .catch(err =>{
          res.send("ERROR CREATE")
      })
-   
     
 }
 // Show Post Detils

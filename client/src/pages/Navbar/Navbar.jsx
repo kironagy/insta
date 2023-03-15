@@ -2,18 +2,20 @@ import {NavLink} from 'react-router-dom'
 import './Navbar.scss'
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-function Navbar(props){
+const Navbar =(props) =>{
     const [avatar , setAvatar] = useState("")
-    useEffect(()=>{
+    const [loading , setLoading] = useState(true)
+     useEffect(()=>{
         axios.post("/users/avatar" , {id:localStorage.getItem("id")}).then(user =>{
             setAvatar(user.data.avatar)
+            setLoading(false)
         })
     },[])
     return(
         <div className="Navbar">
                 <ul>
                     {localStorage.getItem("token") && localStorage.getItem("id") ? <div className='profile'>
-                        <NavLink to={'/profile/'+localStorage.getItem("id")}><img src={'../../users/'+avatar} alt='profile pic'></img></NavLink>
+                        {loading ? "" : <NavLink to={'/profile/'+localStorage.getItem("id")}><img src={'/users/upload/avatar/'+avatar} alt='profile pic'></img></NavLink>}
                     </div> : ""}
                     <li>
                         <NavLink to="/">الرئيسيه</NavLink>

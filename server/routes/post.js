@@ -2,13 +2,15 @@ var express = require('express');
 var router = express.Router();
 const controller = require("../controller/postController");
 const Auth = require("../middleware/authmiddleware");
+const fs = require("fs")
+const path = require('path')
 const multer = require('multer');
 const storage = multer.diskStorage({
     destination: function(req,file,cb){
-        cb(null , '../client/public/posts/')
+        cb(null , './upload/posts/')
     },
     filename:function(req,file,cb){
-        const fileName = Date.now() + "-" + Math.round(Math.random() * 100) +"-"+ file.originalname.replace(' ','') ;
+        const fileName = Date.now() + "-" + Math.round(Math.random() * 100) +"-"+ file.originalname.replace(' ','').replace("  ",'') ;
         cb(null,fileName)
     },
     
@@ -38,5 +40,11 @@ router.put("/edit/:id" ,Auth.verify, controller.Edit_Post);
 router.delete("/delete/:id",Auth.verify, controller.Delete_Post);
 router.post("/like/:id",Auth.verify, controller.Like_Post);
 router.post("/deslike/:id",Auth.verify, controller.Deslike_Post);
+
+router.get("/upload/posts/:id" , (req,res,next)=>{
+    const ph = path.join(__dirname , '../upload/posts/')
+    res.sendFile(ph + req.params.id)
+
+})
 
 module.exports = router;

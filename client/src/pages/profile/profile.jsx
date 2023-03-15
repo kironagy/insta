@@ -5,7 +5,7 @@ import {BiLike} from 'react-icons/bi'
 import {AiOutlineComment , AiOutlineHeart , AiOutlineShareAlt , AiFillHeart} from 'react-icons/ai'
 import {IoExit} from 'react-icons/io5'
 import {TbEdit} from 'react-icons/tb'
-import {useEffect, useState , useRef } from 'react'
+import {useEffect, useState , useRef, useMemo } from 'react'
 import { NavLink, useParams } from 'react-router-dom';
 import { Spinner } from 'reactstrap'
 import axios from 'axios';
@@ -23,6 +23,7 @@ function Profile(){
     const PicRef = useRef();
 
     useEffect(()=>{
+        
          axios.get("/users/profile/"+link.id).then(user =>{
             setUser(user.data)
             setAvatar(user.data.avatar);
@@ -36,6 +37,7 @@ function Profile(){
             }
         })
     },[])
+    
 
     const SwitchPage = () =>{
         if(Edit == false){
@@ -79,9 +81,17 @@ function Profile(){
     const UploadPhoto = (e)=>{
         e.preventDefault();
         const reader = new FileReader();
-        reader.readAsDataURL(e.target.files[0]);
-        reader.onloadend = () =>{
-            setNewPic({file:e.target.files[0] , src:reader.result})
+        if(e.target.files[0].type === "image/jpeg" || e.target.files[0].type === "image/png" ||e.target.files[0].type === "image/gif"){
+            if(e.target.files[0].size > 1361782){
+                alert("مساحه الصوره كبيره")
+            }else{
+                reader.readAsDataURL(e.target.files[0]);
+                reader.onloadend = () =>{
+                setNewPic({file:e.target.files[0] , src:reader.result})
+            }
+        }
+        }else{
+            alert("gif | png | jpeg  صيغ الصور المسموحه ")
         }
     }
 
@@ -117,7 +127,7 @@ function Profile(){
                         <div className='pic'>
                             {localStorage.getItem("id") == User.id ? <TbEdit className='edit' onClick={SwitchPage}></TbEdit> : ""}
                             <input type='file' ref={PicRef} onChange={UploadPhoto} style={{visibility:'hidden', position:'absolute'}}></input>
-                            {Edit ? <><img onClick={PicRefrence} src={newPic.src || '../../users/'+avatar} alt='profile pic'></img></> : <img src={'../../users/'+User.avatar} alt='profile pic'></img>}
+                            {Edit ? <><img onClick={PicRefrence} src={newPic.src || '/users/upload/avatar/'+avatar} alt='profile pic'></img></> : <img src={'/users/upload/avatar/'+User.avatar} alt='profile pic'></img>}
                         </div>
                         <div className='Name'>
                             {Edit ? <input value={newName} onChange={ChangeInput} name='name' placeholder='Name'></input> : <h1>{User.name}</h1>}
@@ -134,7 +144,7 @@ function Profile(){
                                 <div className='posts'>
                                 <div className='post'>
                                         <p id='title'>{post.title}</p>
-                                        <img src={'../posts/'+post.src} alt='/'></img>
+                                        <img loading='lazy' src={'/posts/upload/posts/'+post.src} alt={post.title}></img>
                                         {localStorage.getItem("token") && localStorage.getItem("id") 
                                             ?
                                             <div className='options'>

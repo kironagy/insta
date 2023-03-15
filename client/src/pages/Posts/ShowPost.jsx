@@ -19,6 +19,8 @@ function ShowPost(){
     const [edit , setEdit] = useState(false);
     const [Like , setLike] = useState(false);
     const [Likes , setLikes] = useState([]);
+    // Alert For Accept for editing or delete
+    const [alert , setAlert] = useState({state:"" , msg:"" , callback:false})
     useEffect(()=>{
         axios({
             method: 'post',
@@ -29,7 +31,12 @@ function ShowPost(){
             setComments(res.data.comments)
             setLoading(false);
             setLikes(res.data.likes.length)
-            res.data.likes.filter(like => like.user.toString() === localStorage.getItem("id").toString()).length > 0 ? setLike(true) : setLike(false)
+            try{
+              res.data.likes.filter(like => like.user.toString() === localStorage.getItem("id").toString()).length > 0 ? setLike(true) : setLike(false)
+
+            }catch(err){
+              setLike(false)
+            }
           })
     },[])
 
@@ -62,30 +69,71 @@ function ShowPost(){
         setEdit(false);
       }
     }
-    const EditPost = () =>{
-     axios.put("http://localhost:5000/posts/edit/"+link.id , {title:newTitle}).then(res =>{
-      if(res.data == "Done"){
-        window.location.reload();
-      }else if(res.data == "please enter a title"){
-        setError("يجب  عليك كتابه العنوان")
+    const EditPost =  () =>{
+        if(alert.state == 'Edit' ){
+          if(alert.callback == true){
+                axios.put("http://localhost:5000/posts/edit/"+link.id , {title:newTitle}).then(res =>{
+                  if(res.data == "Done"){
+                  window.location.reload();
+                  }else if(res.data == "please enter a title"){
+                  setError("يجب  عليك كتابه العنوان")
+                  }
+                })
+          }
+        }else{
+          setAlert({state:"Edit" , msg:"هل متاكد من تعديل المنشور"})
+        }
+    }
+
+    const ShowAlert = () =>{
+      if(alert.state == 'Edit'){
+        return(
+          <div className='Alert'>
+          <p id='title'>{alert.title}</p>
+          <p id='msg'>{alert.msg}</p>
+          <div>
+            <button onClick={()=>{EditPost(setAlert({...alert, callback:true}))}}>نعم</button>
+            <button onClick={()=>{setAlert({state:false , title:"" , msg:"" , callback:"No"})}}>لا</button>
+          </div>
+        </div>
+        )
+      }else if(alert.state == "Delete"){
+        return(
+          <div className='Alert'>
+          <p id='title'>{alert.title}</p>
+          <p id='msg'>{alert.msg}</p>
+          <div>
+            <button onClick={()=>{DeletePost(setAlert({...alert, callback:true}))}}>نعم</button>
+            <button onClick={()=>{DeletePost({state:false , title:"" , msg:"" , callback:"No"})}}>لا</button>
+          </div>
+        </div>
+        )
+      }else{
+        return null
       }
-       })
-     
     }
 
     const DeletePost = () =>{
-      axios.delete("/posts/delete/"+link.id).then(res =>{
-        if(res.data == "Done"){
-          window.location.href = '/'
+      if(alert.state == "Delete"){
+        if(alert.callback == true){
+          axios.delete("/posts/delete/"+link.id).then(res =>{
+            if(res.data == "Done"){
+              window.location.href = '/'
+            }
+          })
         }
-      })
+      }else{
+        setAlert({state:"Delete" , msg:"هل متاكد من حذف المنشور"})
+      }
     }
 
     const LikePost = () =>{
-      axios.post("/posts/like/"+link.id).then(res =>{
-        setLike(true)
-        setLikes(Likes +1)
-      })
+      if(localStorage.getItem("token") && localStorage.getItem("id")){
+        axios.post("/posts/like/"+link.id).then(res =>{
+          setLike(true)
+          setLikes(Likes +1)
+        })
+      }
     }
 
     const DesLikePost = () =>{
@@ -105,9 +153,10 @@ function ShowPost(){
     else{
       return(
         <div className='Show'>
+            <ShowAlert></ShowAlert>
             <NavLink to={'/profile/'+post.author._id} className='author'>
                     <p>{post.author.name}</p>
-                    <img src={'../users/'+post.author.avatar} alt={post.author.name}></img>
+                    <img src={'/users/upload/avatar/'+post.author.avatar} alt={post.author.name}></img>
             </NavLink>
 
               {localStorage.getItem("id") === post.author._id ? 
@@ -118,7 +167,7 @@ function ShowPost(){
             }
             <div className='post'>
                 {edit ? <><input id='title' value={newTitle} onChange={(e)=>{setNewTitle(e.target.value)}}></input><button onClick={EditPost}>حفظ</button></> : <p id='title'>{post.title}</p>}
-                <img src={'../posts/'+post.src} alt={post.title}></img>
+                <img loading='lazy' src={'/posts/upload/posts/'+post.src} alt={post.title}></img>
                 <div className='options'>
                   {Like == true ? <AiFillHeart id='like' onClick={DesLikePost} color='red'/> : <AiOutlineHeart id='like' onClick={LikePost} />}<span>{Likes}</span>
                   <AiOutlineComment color='#1d1e20d4'/><span>{post.comments.length}</span>
@@ -142,10 +191,10 @@ function ShowPost(){
               }
               {comments.map((comment,i) =>{
                 return(
-                  <div className='author_comment'>
+                  <div className='author_comment' key={i}>
                       <NavLink to={'/profile/'+comment.author._id} className='author'>
                       <p>{comment.author.name}</p>
-                      <img src={'../users/'+comment.author.avatar} alt={comment.author.name}></img>
+                      <img src={'/users/upload/avatar/'+comment.author.avatar} alt={comment.author.name}></img>
                     </NavLink>
                     <pre className='comment'>{comment.comment}</pre>
                   </div>

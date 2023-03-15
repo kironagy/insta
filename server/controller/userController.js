@@ -18,7 +18,9 @@ exports.Create_Account = (req,res,next)=>{
         const token = Auth.Sign(user)
         res.send({id:user.id,token})
     }).catch(err =>{
-        res.send(err)
+        res.status(404).json({message:'This Account Used'}).send()
+        // next(CreateError(401 , 'This Account Used'))
+        // console.log(CreateError(404 , 'KERO'))
     })
 }
 // Login User
@@ -54,9 +56,7 @@ exports.Edit_Account = (req,res,next)=>{
         try{
             if(req.body.name !==''){
                 user.name = req.body.name;
-                if(req.body.bio){
-                    user.bio = req.body.bio;
-                }
+                user.bio = req.body.bio || '';
                 if(req.file){
                     user.avatar = req.file.filename;
                 }
@@ -104,6 +104,7 @@ exports.getAvatar = (req,res,next)=>{
         res.send("User not found")
     })
 }
+
 // Return User Account
 exports.me = (req,res,next)=>{
     res.send(req.user)

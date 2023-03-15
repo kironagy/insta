@@ -86,18 +86,26 @@ function CreatePost(){
         form.append('title', title);
         form.append('src', Img);
         try{
-            axios({
-                method: 'post',
-                url: '/posts/create',
-                data:form,
-                headers: {
-                  'Content-Type': 'multipart/form-data',
-                }
-              }).then(res =>{
-                if(res.data == "Done"){
-                  window.location.href='/'
-                }
-              })
+           if(Img){
+            if(title){
+                axios({
+                    method: 'post',
+                    url: '/posts/create',
+                    data:form,
+                    headers: {
+                      'Content-Type': 'multipart/form-data',
+                    }
+                  }).then(res =>{
+                    if(res.data == "Done"){
+                      window.location.href='/'
+                    }
+                  })
+            }else{
+                setError("يجب عليك كتابه عنوان")
+            }
+           }else{
+            setError("يجب عليك رفع صوره")
+           }
        
         }catch(err){
             setError("هناك مشكله ما")

@@ -45,7 +45,6 @@ function Login(){
                 }
             }
             
-            console.log(res.data)
         })
         }
     }
